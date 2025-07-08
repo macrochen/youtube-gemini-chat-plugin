@@ -61,14 +61,10 @@ function addButtonToVideo(videoElement) {
       const videoUrl = linkElement.href;
       console.log('Video URL found:', videoUrl);
       
-      // Send the URL to the background script
-      chrome.runtime.sendMessage({ action: "openAndSubmit", url: videoUrl }, (response) => {
-        if (chrome.runtime.lastError) {
-          console.error(chrome.runtime.lastError.message);
-        } else {
-          console.log('Message sent successfully.');
-        }
-      });
+      // Send the URL to the background script.
+      // We don't use a callback here to avoid the "context invalidated" error
+      // if the page navigates after the click.
+      chrome.runtime.sendMessage({ action: "openAndSubmit", url: videoUrl });
 
     } else {
       console.error('Could not find the video link.');
