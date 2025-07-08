@@ -1,0 +1,38 @@
+
+{
+  "manifest_version": 3,
+  "name": "YouTube Link Submitter",
+  "version": "1.0",
+  "description": "Select a YouTube video to copy its link and submit it to a specified website.",
+  "permissions": [
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.youtube.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "options_page": "options.html",
+  "action": {
+    "default_icon": {
+      "16": "icons/image.png",
+      "48": "icons/image.png",
+      "128": "icons/image.png"
+    },
+    "default_title": "YouTube Link Submitter"
+  },
+  "icons": {
+    "16": "icons/image.png",
+    "48": "icons/image.png",
+    "128": "icons/image.png"
+  }
+}
