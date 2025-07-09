@@ -1,6 +1,6 @@
 
 const ADDED_BUTTON_CLASS = 'gemini-submit-button-added';
-const BUTTON_TEXT = '➤ Submit'; // Using a simple arrow icon
+const BUTTON_TEXT = 'Chat'; // Using a simple arrow icon
 
 // Function to add a button to a video element
 function addButtonToVideo(videoElement) {
@@ -74,8 +74,9 @@ function addButtonToVideo(videoElement) {
 
 // Function to scan for new videos and add buttons
 function scanForVideos() {
-  // This selector targets video items on the homepage, search results, and channel pages
-  const videos = document.querySelectorAll('ytd-rich-item-renderer');
+  // This selector now targets videos on the homepage, search results,
+  // and the related videos list on the watch page.
+  const videos = document.querySelectorAll('ytd-rich-item-renderer, ytd-compact-video-renderer');
   videos.forEach(addButtonToVideo);
 }
 
