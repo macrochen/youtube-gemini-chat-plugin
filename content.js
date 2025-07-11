@@ -1,15 +1,24 @@
 
 const ADDED_BUTTON_CLASS = 'gemini-submit-button-added';
-const BUTTON_TEXT = 'Chat'; // Using a simple arrow icon
+const BUTTON_TEXT = '➤ Chat'; // Using a simple arrow icon
 
 // Function to add a button to a video element
 function addButtonToVideo(videoElement) {
-  // Check if a button has already been added
+  // Check if the main container has already been processed.
   if (videoElement.classList.contains(ADDED_BUTTON_CLASS)) {
     return;
   }
 
-  // Mark this element as processed
+  // Use a more robust selector to find the link/thumbnail container.
+  // This handles multiple YouTube layouts, including the main grid, watch page sidebar, and channel pages.
+  const linkElement = videoElement.querySelector('a#thumbnail, a.yt-lockup-view-model-wiz__content-image');
+
+  // If no link element is found inside this container, we can't proceed.
+  if (!linkElement) {
+    return;
+  }
+
+  // Mark the main container as processed to avoid adding duplicate buttons.
   videoElement.classList.add(ADDED_BUTTON_CLASS);
 
   const button = document.createElement('button');
@@ -30,44 +39,32 @@ function addButtonToVideo(videoElement) {
   button.style.opacity = '0'; // Initially hidden
   button.style.transition = 'opacity 0.2s';
 
+  // The link element itself is the best place to attach the button and hover events.
+  // It needs a position so the absolute-positioned button is relative to it.
+  linkElement.style.position = 'relative';
+  linkElement.appendChild(button);
 
-  // Find the thumbnail container to make its position relative
-  const thumbnailContainer = videoElement.querySelector('#thumbnail');
-  if (thumbnailContainer) {
-    thumbnailContainer.style.position = 'relative';
-    thumbnailContainer.appendChild(button);
-
-    // Show button on hover
-    thumbnailContainer.addEventListener('mouseenter', () => {
-      button.style.opacity = '1';
-    });
-    thumbnailContainer.addEventListener('mouseleave', () => {
-      button.style.opacity = '0';
-    });
-  } else {
-      // Fallback if #thumbnail is not found
-      videoElement.style.position = 'relative';
-      videoElement.appendChild(button);
-  }
-
+  // Show button on hover
+  linkElement.addEventListener('mouseenter', () => {
+    button.style.opacity = '1';
+  });
+  linkElement.addEventListener('mouseleave', () => {
+    button.style.opacity = '0';
+  });
 
   button.addEventListener('click', (event) => {
     event.preventDefault();
     event.stopPropagation();
 
-    // Find the video link within the element
-    const linkElement = videoElement.querySelector('a#thumbnail');
-    if (linkElement && linkElement.href) {
+    // The href is on the linkElement we found earlier.
+    if (linkElement.href) {
       const videoUrl = linkElement.href;
       console.log('Video URL found:', videoUrl);
       
       // Send the URL to the background script.
-      // We don't use a callback here to avoid the "context invalidated" error
-      // if the page navigates after the click.
       chrome.runtime.sendMessage({ action: "openAndSubmit", url: videoUrl });
-
     } else {
-      console.error('Could not find the video link.');
+      console.error('Could not find the video link href.');
     }
   });
 }
@@ -76,7 +73,7 @@ function addButtonToVideo(videoElement) {
 function scanForVideos() {
   // This selector now targets videos on the homepage, search results,
   // and the related videos list on the watch page.
-  const videos = document.querySelectorAll('ytd-rich-item-renderer, ytd-compact-video-renderer');
+  const videos = document.querySelectorAll('ytd-rich-item-renderer, ytd-thumbnail, yt-lockup-view-model, ytd-compact-video-renderer, ytd-video-renderer, ytd-grid-video-renderer');
   videos.forEach(addButtonToVideo);
 }
 
