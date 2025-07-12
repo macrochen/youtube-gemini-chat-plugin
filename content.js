@@ -56,15 +56,25 @@ function addButtonToVideo(videoElement) {
     event.preventDefault();
     event.stopPropagation();
 
-    // The href is on the linkElement we found earlier.
-    if (linkElement.href) {
+    const linkElement = videoElement.querySelector('a#thumbnail, a.yt-lockup-view-model-wiz__content-image');
+    if (linkElement && linkElement.href) {
       const videoUrl = linkElement.href;
-      console.log('Video URL found:', videoUrl);
       
-      // Send the URL to the background script.
-      chrome.runtime.sendMessage({ action: "openAndSubmit", url: videoUrl });
+      // Copy the URL to the clipboard
+      navigator.clipboard.writeText(videoUrl).then(() => {
+        console.log('Video URL copied to clipboard:', videoUrl);
+        // Optionally, show a brief confirmation to the user
+        button.innerText = 'Copied!';
+        setTimeout(() => { button.innerText = BUTTON_TEXT; }, 1500);
+      }).catch(err => {
+        console.error('Failed to copy URL: ', err);
+      });
+
+      // Send a message to the background script to open the new tab
+      chrome.runtime.sendMessage({ action: "openTabOnly" });
+
     } else {
-      console.error('Could not find the video link href.');
+      console.error('Could not find the video link.');
     }
   });
 }
