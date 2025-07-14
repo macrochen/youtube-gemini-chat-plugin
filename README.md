@@ -80,4 +80,95 @@ Due to Chrome's security policies that protect pages like Gemini, extensions are
 1.  访问 `https://www.youtube.com`。
 2.  将鼠标悬停在任意一个视频的缩略图上，一个“➤ Chat”按钮便会出现。
 3.  **点击该按钮。** 此时，视频链接已被复制到您的剪贴板，同时您的 Gemini Gem 页面会在新标签页中打开。
-4.  在打开的 Gemini 页面中，将链接**粘贴**（`Cmd+V` 或 `Ctrl+V`）到聊天输入框中，即可开始分析。
+4.  
+
+在打开的 Gemini 页面中，将链接**粘贴**（`Cmd+V` 或 `Ctrl+V`）到聊天输入框中，即可开始分析。
+
+---
+
+## Fully Automated Workflow with Tampermonkey (Optional)
+
+For users who want to completely eliminate the manual paste step, we offer an optional enhancement using the Tampermonkey browser extension. By installing a companion user script, the video link and your prompt will be **automatically submitted** to Gemini the moment the page loads.
+
+This creates a true one-click experience from YouTube to a completed Gemini prompt.
+
+### 1. Install Tampermonkey
+
+First, install the [Tampermonkey extension](https://www.tampermonkey.net/) for your browser (it's available for all major browsers).
+
+### 2. Install the Auto-Submit User Script
+
+1.  Click the Tampermonkey icon in your browser toolbar and select "Create a new script...".
+2.  Copy the entire content of the `tampermonkey_userscript.js` file from this repository.
+3.  Paste it into the Tampermonkey editor, replacing any default content.
+4.  Go to `File > Save` in the editor menu.
+
+The script is now active and will run automatically on the correct Gemini pages.
+
+### 3. Configure the Extension for Auto-Submission
+
+To enable the automated workflow, you need to format the Gemini URL in the extension's options in a specific way.
+
+1.  Navigate back to the extension's "Options" page.
+2.  In the "Gemini Gem URL" field, append the following parameter to your URL: `?auto-submit-prompt=YOUR_PROMPT_HERE`
+
+**Example:**
+
+Your final URL should look like this:
+
+```
+https://gemini.google.com/u/1/gem/YOUR_GEM_ID?auto-submit-prompt=Please summarize this video: 
+```
+
+**How it works:**
+
+-   The text after `auto-submit-prompt=` becomes your prompt in Gemini.
+-   The extension will automatically add the YouTube video link to the end of that prompt.
+-   **Important:** Remember to include a space at the end of your prompt text (before the `&`) if you want to separate it from the video link.
+
+With this setup, clicking the "➤ Chat" button on YouTube will open Gemini, paste your prompt and the link, and submit it for you.
+
+---
+
+## (可选) 使用油猴脚本实现全自动工作流
+
+对于希望完全省去“手动粘贴”这一步的用户，我们提供了一个可选的增强方案：使用“油猴 (Tampermonkey)”浏览器扩展。通过安装一个配套的用户脚本，视频链接和您的提示语将会在 Gemini 页面加载完成的瞬间被**自动提交**。
+
+这实现了从 YouTube 到 Gemini 完成指令提交的真正“一键化”体验。
+
+### 1. 安装油猴 (Tampermonkey)
+
+首先，请为您的浏览器安装 [Tampermonkey 扩展](https://www.tampermonkey.net/) (支持所有主流浏览器)。
+
+### 2. 安装自动提交用户脚本
+
+1.  点击浏览器工具栏上的“油猴”图标，然后选择“添加新脚本...”。
+2.  将本项目中 `tampermonkey_userscript.js` 文件的全部内容复制出来。
+3.  将其粘贴到油猴的编辑器中，替换掉所有默认内容。
+4.  在编辑器菜单中，点击 `文件 > 保存`。
+
+脚本现在就已经激活，并会在匹配的 Gemini 页面上自动运行。
+
+### 3. 配置插件以支持自动提交
+
+为了启用自动化流程，您需要按照特定格式来设置插件选项中的 Gemini 网址。
+
+1.  回到本插件的“选项”页面。
+2.  在“Gemini Gem URL”输入框中，在您原有的网址末尾追加以下参数: `?auto-submit-prompt=你的提示语`
+
+**示例:**
+
+您最终的网址应该像这样：
+
+```
+https://gemini.google.com/u/1/gem/YOUR_GEM_ID?auto-submit-prompt=请总结这个视频：
+```
+
+**工作原理:**
+
+-   `auto-submit-prompt=` 后面的文本会成为您在 Gemini 中的提示语。
+-   本插件会自动将 YouTube 视频链接追加在这段提示语的末尾。
+-   **重要提示:** 如果希望提示语和链接之间有空格，请记得在您的提示语文本末尾加上一个空格。
+
+完成此设置后，在 YouTube 上点击“➤ Chat”按钮将会打开 Gemini，自动粘贴您的提示语和视频链接，并为您提交。
+
