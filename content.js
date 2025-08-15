@@ -44,6 +44,22 @@ function addButtonToVideo(videoElement) {
   // The link element itself is the best place to attach the button and hover events.
   // It needs a position so the absolute-positioned button is relative to it.
   linkElement.style.position = 'relative';
+  
+  // 保持缩略图原始宽高比
+  const thumbnailImg = linkElement.querySelector('img');
+  if (thumbnailImg) {
+    // 确保图片保持原始宽高比
+    thumbnailImg.style.objectFit = 'cover';
+  }
+  
+  // 确保链接元素不会因为相对定位而改变尺寸
+  const originalWidth = getComputedStyle(linkElement).width;
+  const originalHeight = getComputedStyle(linkElement).height;
+  if (originalWidth && originalHeight) {
+    linkElement.style.width = originalWidth;
+    linkElement.style.height = originalHeight;
+  }
+  
   linkElement.appendChild(button);
 
   // Show button on hover
