@@ -13,7 +13,7 @@ function addButtonToVideo(videoElement) {
 
   // Use a more robust selector to find the link/thumbnail container.
   // This handles multiple YouTube layouts, including the main grid, watch page sidebar, and channel pages.
-  const linkElement = videoElement.querySelector('a#thumbnail, a.yt-lockup-view-model-wiz__content-image');
+  const linkElement = videoElement.querySelector('a.yt-lockup-view-model-wiz__content-image');
 
   // If no link element is found inside this container, we can't proceed.
   if (!linkElement) {
@@ -170,12 +170,73 @@ function addButtonToPlayer() {
   });
 }
 
+const SEARCH_BUTTON_ADDED_CLASS = 'gemini-search-button-added';
+
+function addChatButtonToSearchItem(videoElement) {
+  const titleElement = videoElement.querySelector('yt-formatted-string.ytd-video-renderer');
+  
+  // If no title or already has a button, skip.
+  if (!titleElement || titleElement.classList.contains(SEARCH_BUTTON_ADDED_CLASS)) {
+    return;
+  }
+
+  // Mark as processed
+  titleElement.classList.add(SEARCH_BUTTON_ADDED_CLASS);
+
+  const button = document.createElement('button');
+  button.innerText = BUTTON_TEXT;
+  
+  // Style for inline button
+  button.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+  button.style.color = 'white';
+  button.style.border = '1px solid white';
+  button.style.borderRadius = '4px';
+  button.style.padding = '2px 6px';
+  button.style.fontSize = '12px';
+  button.style.cursor = 'pointer';
+  button.style.marginRight = '8px';
+  button.style.display = 'inline-block';
+  button.style.verticalAlign = 'middle'; // Align button nicely with the text
+
+  // Insert button before the title
+  titleElement.parentNode.insertBefore(button, titleElement);
+
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Find the video link within the same ytd-video-renderer container
+    const linkElement = videoElement.querySelector('a#video-title');
+    if (linkElement && linkElement.href) {
+      const videoUrl = linkElement.href;
+      
+      // Copy URL to clipboard
+      navigator.clipboard.writeText(videoUrl).then(() => {
+        console.log('Video URL copied to clipboard:', videoUrl);
+        button.innerText = COPIED_TEXT;
+        setTimeout(() => { button.innerText = BUTTON_TEXT; }, 1500);
+      }).catch(err => {
+        console.error('Failed to copy URL: ', err);
+      });
+
+      // Send message to background script
+      chrome.runtime.sendMessage({ action: "openTabOnly" });
+
+    } else {
+      console.error('Could not find the video link for search item.');
+    }
+  });
+}
+
 // Function to scan for new videos and add buttons
 function scanForVideos() {
-  // This selector now targets videos on the homepage, search results,
-  // and the related videos list on the watch page.
-  const videos = document.querySelectorAll('ytd-rich-item-renderer, ytd-thumbnail, yt-lockup-view-model, ytd-compact-video-renderer, ytd-video-renderer, ytd-grid-video-renderer');
-  videos.forEach(addButtonToVideo);
+  // Handle search result items separately
+  const searchVideos = document.querySelectorAll('ytd-video-renderer');
+  searchVideos.forEach(addChatButtonToSearchItem);
+
+  // Handle all other video types with the original function
+  const otherVideos = document.querySelectorAll('ytd-rich-item-renderer, yt-lockup-view-model, ytd-compact-video-renderer, ytd-grid-video-renderer');
+  otherVideos.forEach(addButtonToVideo);
   
   // 新增：处理视频播放器
   addButtonToPlayer();
