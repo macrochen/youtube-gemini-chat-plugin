@@ -1,22 +1,52 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-  <title>YouTube Link Submitter Options</title>
+  <title>YouTube Gemini Chat Plugin Options</title>
   <style>
-    body { font-family: sans-serif; padding: 1em; width: 300px; }
-    label { display: block; margin-bottom: 0.5em; }
-    input[type="url"] { width: 100%; padding: 0.5em; box-sizing: border-box; }
-    button { margin-top: 1em; padding: 0.5em 1em; }
-    #status { margin-top: 1em; font-weight: bold; }
+    body { font-family: sans-serif; font-size: 14px; padding: 10px; max-width: 600px; }
+    .container { display: flex; flex-direction: column; gap: 15px; }
+    .input-group { display: flex; flex-direction: column; }
+    label { font-weight: bold; margin-bottom: 5px; }
+    input[type="text"] { width: 100%; padding: 8px; box-sizing: border-box; }
+    button { padding: 10px 15px; cursor: pointer; }
+    #status { margin-top: 10px; color: green; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>Settings</h1>
-  <label for="target-url">Target Website URL:</label>
-  <input type="url" id="target-url" placeholder="https://example.com/submit">
+  <h1>Selector Configuration</h1>
+  <p>Here you can customize the CSS selectors used to find elements on YouTube's pages.</p>
+  
+  <div class="container">
+    <div class="input-group">
+      <label for="searchResultItem">Search Result Item Selector:</label>
+      <input id="searchResultItem" type="text">
+    </div>
+    <div class="input-group">
+      <label for="searchResultTitle">Search Result Title Selector:</label>
+      <input id="searchResultTitle" type="text">
+    </div>
+    <div class="input-group">
+      <label for="searchResultLink">Search Result Link Selector:</label>
+      <input id="searchResultLink" type="text">
+    </div>
+    <div class="input-group">
+      <label for="otherVideoItems">Other Video Items Selector:</label>
+      <input id="otherVideoItems" type="text">
+    </div>
+    <div class="input-group">
+      <label for="thumbnailTarget">Thumbnail Target Selector:</label>
+      <input id="thumbnailTarget" type="text">
+    </div>
+    <div class="input-group">
+      <label for="thumbnailLink">Thumbnail Link Selector:</label>
+      <input id="thumbnailLink" type="text">
+    </div>
+  </div>
+
+  <br>
   <button id="save">Save</button>
   <div id="status"></div>
+
   <script src="options.js"></script>
 </body>
 </html>

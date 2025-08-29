@@ -4,255 +4,183 @@ const ADDED_PLAYER_BUTTON_CLASS = 'gemini-player-button-added'; // 新增：标�
 const BUTTON_TEXT = '➤ Chat'; // Using a simple arrow icon
 const COPIED_TEXT = 'Copied!'; // 新增：复制成功的提示文本
 
-// Function to add a button to a video element
-function addButtonToVideo(videoElement) {
-  // Check if the main container has already been processed.
-  if (videoElement.classList.contains(ADDED_BUTTON_CLASS)) {
-    return;
-  }
+// Default selectors, in case none are stored yet. This should match options.js
+const DEFAULT_SELECTORS = {
+    searchResultItem: 'ytd-video-renderer',
+    searchResultTitle: 'yt-formatted-string.ytd-video-renderer',
+    searchResultLink: 'a#video-title',
+    otherVideoItems: 'ytd-rich-item-renderer, yt-lockup-view-model, ytd-compact-video-renderer, ytd-grid-video-renderer',
+    thumbnailTarget: 'a.yt-lockup-view-model__content-image',
+    thumbnailLink: 'a#thumbnail, a.yt-lockup-view-model__content-image'
+};
 
-  // Use a more robust selector to find the link/thumbnail container.
-  // This handles multiple YouTube layouts, including the main grid, watch page sidebar, and channel pages.
-  const linkElement = videoElement.querySelector('a.yt-lockup-view-model-wiz__content-image');
+/**
+ * Main initializer for the content script.
+ * This function is called after the configuration is loaded from chrome.storage.
+ * @param {object} CONFIG - The configuration object with selectors.
+ */
+function initialize(CONFIG) {
 
-  // If no link element is found inside this container, we can't proceed.
-  if (!linkElement) {
-    return;
-  }
-
-  // Mark the main container as processed to avoid adding duplicate buttons.
-  videoElement.classList.add(ADDED_BUTTON_CLASS);
-
-  const button = document.createElement('button');
-  button.innerText = BUTTON_TEXT;
-  
-  // Basic styling
-  button.style.position = 'absolute';
-  button.style.top = '8px';
-  button.style.right = '8px';
-  button.style.zIndex = '1000';
-  button.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-  button.style.color = 'white';
-  button.style.border = '1px solid white';
-  button.style.borderRadius = '4px';
-  button.style.padding = '4px 8px';
-  button.style.fontSize = '12px';
-  button.style.cursor = 'pointer';
-  button.style.opacity = '0'; // Initially hidden
-  button.style.transition = 'opacity 0.2s';
-
-  // The link element itself is the best place to attach the button and hover events.
-  // It needs a position so the absolute-positioned button is relative to it.
-  linkElement.style.position = 'relative';
-  
-  // 保持缩略图原始宽高比
-  const thumbnailImg = linkElement.querySelector('img');
-  if (thumbnailImg) {
-    // 确保图片保持原始宽高比
-    thumbnailImg.style.objectFit = 'cover';
-  }
-  
-  // 确保链接元素不会因为相对定位而改变尺寸
-  const originalWidth = getComputedStyle(linkElement).width;
-  const originalHeight = getComputedStyle(linkElement).height;
-  if (originalWidth && originalHeight) {
-    linkElement.style.width = originalWidth;
-    linkElement.style.height = originalHeight;
-  }
-  
-  linkElement.appendChild(button);
-
-  // Show button on hover
-  linkElement.addEventListener('mouseenter', () => {
-    button.style.opacity = '1';
-  });
-  linkElement.addEventListener('mouseleave', () => {
-    button.style.opacity = '0';
-  });
-
-  button.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-
-    const linkElement = videoElement.querySelector('a#thumbnail, a.yt-lockup-view-model-wiz__content-image');
-    if (linkElement && linkElement.href) {
-      const videoUrl = linkElement.href;
-      
-      // Copy the URL to the clipboard
-      navigator.clipboard.writeText(videoUrl).then(() => {
-        console.log('Video URL copied to clipboard:', videoUrl);
-        // Optionally, show a brief confirmation to the user
-        button.innerText = COPIED_TEXT;
-        setTimeout(() => { button.innerText = BUTTON_TEXT; }, 1500);
-      }).catch(err => {
-        console.error('Failed to copy URL: ', err);
-      });
-
-      // Send a message to the background script to open the new tab
-      chrome.runtime.sendMessage({ action: "openTabOnly" });
-
-    } else {
-      console.error('Could not find the video link.');
+  // Function to add a button to a video element (thumbnail version)
+  function addButtonToVideo(videoElement) {
+    if (videoElement.classList.contains(ADDED_BUTTON_CLASS)) {
+      return;
     }
-  });
-}
+    const linkElement = videoElement.querySelector(CONFIG.selectors.thumbnailTarget);
+    if (!linkElement) {
+      return;
+    }
+    videoElement.classList.add(ADDED_BUTTON_CLASS);
 
-// 新增：为视频播放器添加按钮的函数
-function addButtonToPlayer() {
-  // 只在视频播放页面执行
-  if (!window.location.pathname.startsWith('/watch')) {
-    return;
-  }
-  
-  // 查找视频播放器容器
-  const playerContainer = document.getElementById('player');
-  if (!playerContainer || playerContainer.classList.contains(ADDED_PLAYER_BUTTON_CLASS)) {
-    return;
-  }
-  
-  // 标记播放器已处理
-  playerContainer.classList.add(ADDED_PLAYER_BUTTON_CLASS);
-  
-  // 创建按钮
-  const button = document.createElement('button');
-  button.innerText = BUTTON_TEXT;
-  
-  // 设置按钮样式，与缩略图按钮保持一致
-  button.style.position = 'absolute';
-  button.style.top = '12px';
-  button.style.right = '12px';
-  button.style.zIndex = '9999'; // 更高的z-index确保按钮在控件上方
-  button.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-  button.style.color = 'white';
-  button.style.border = '1px solid white';
-  button.style.borderRadius = '4px';
-  button.style.padding = '4px 8px';
-  button.style.fontSize = '12px';
-  button.style.cursor = 'pointer';
-  button.style.opacity = '0'; // 初始隐藏
-  button.style.transition = 'opacity 0.2s';
-  
-  // 确保播放器容器有相对定位
-  if (getComputedStyle(playerContainer).position === 'static') {
-    playerContainer.style.position = 'relative';
-  }
-  
-  // 添加按钮到播放器
-  playerContainer.appendChild(button);
-  
-  // 鼠标悬停显示按钮
-  playerContainer.addEventListener('mouseenter', () => {
-    button.style.opacity = '1';
-  });
-  playerContainer.addEventListener('mouseleave', () => {
+    const button = document.createElement('button');
+    button.innerText = BUTTON_TEXT;
+    button.style.position = 'absolute';
+    button.style.top = '8px';
+    button.style.right = '8px';
+    button.style.zIndex = '1000';
+    button.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    button.style.color = 'white';
+    button.style.border = '1px solid white';
+    button.style.borderRadius = '4px';
+    button.style.padding = '4px 8px';
+    button.style.fontSize = '12px';
+    button.style.cursor = 'pointer';
     button.style.opacity = '0';
-  });
-  
-  // 点击按钮的处理
-  button.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    // 获取当前视频URL
-    const videoUrl = window.location.href;
-    
-    // 复制URL到剪贴板
-    navigator.clipboard.writeText(videoUrl).then(() => {
-      console.log('Video URL copied to clipboard:', videoUrl);
-      button.innerText = COPIED_TEXT;
-      setTimeout(() => { button.innerText = BUTTON_TEXT; }, 1500);
-    }).catch(err => {
-      console.error('Failed to copy URL: ', err);
+    button.style.transition = 'opacity 0.2s';
+    linkElement.style.position = 'relative';
+
+    const thumbnailImg = linkElement.querySelector('img');
+    if (thumbnailImg) {
+      thumbnailImg.style.objectFit = 'cover';
+    }
+    linkElement.appendChild(button);
+
+    linkElement.addEventListener('mouseenter', () => { button.style.opacity = '1'; });
+    linkElement.addEventListener('mouseleave', () => { button.style.opacity = '0'; });
+
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const videoLinkElement = videoElement.querySelector(CONFIG.selectors.thumbnailLink);
+      if (videoLinkElement && videoLinkElement.href) {
+        navigator.clipboard.writeText(videoLinkElement.href).then(() => {
+          button.innerText = COPIED_TEXT;
+          setTimeout(() => { button.innerText = BUTTON_TEXT; }, 1500);
+        });
+        chrome.runtime.sendMessage({ action: "openTabOnly" });
+      } else {
+        console.error('Could not find the video link.');
+      }
     });
-    
-    // 发送消息给后台脚本打开新标签页
-    chrome.runtime.sendMessage({ action: "openTabOnly" });
-  });
-}
-
-const SEARCH_BUTTON_ADDED_CLASS = 'gemini-search-button-added';
-
-function addChatButtonToSearchItem(videoElement) {
-  const titleElement = videoElement.querySelector('yt-formatted-string.ytd-video-renderer');
-  
-  // If no title or already has a button, skip.
-  if (!titleElement || titleElement.classList.contains(SEARCH_BUTTON_ADDED_CLASS)) {
-    return;
   }
 
-  // Mark as processed
-  titleElement.classList.add(SEARCH_BUTTON_ADDED_CLASS);
+  // Function to add a button to the player
+  function addButtonToPlayer() {
+    if (!window.location.pathname.startsWith('/watch')) return;
+    const playerContainer = document.getElementById('player');
+    if (!playerContainer || playerContainer.classList.contains(ADDED_PLAYER_BUTTON_CLASS)) return;
+    playerContainer.classList.add(ADDED_PLAYER_BUTTON_CLASS);
 
-  const button = document.createElement('button');
-  button.innerText = BUTTON_TEXT;
-  
-  // Style for inline button
-  button.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-  button.style.color = 'white';
-  button.style.border = '1px solid white';
-  button.style.borderRadius = '4px';
-  button.style.padding = '2px 6px';
-  button.style.fontSize = '12px';
-  button.style.cursor = 'pointer';
-  button.style.marginRight = '8px';
-  button.style.display = 'inline-block';
-  button.style.verticalAlign = 'middle'; // Align button nicely with the text
+    const button = document.createElement('button');
+    button.innerText = BUTTON_TEXT;
+    button.style.position = 'absolute';
+    button.style.top = '12px';
+    button.style.right = '12px';
+    button.style.zIndex = '9999';
+    button.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    button.style.color = 'white';
+    button.style.border = '1px solid white';
+    button.style.borderRadius = '4px';
+    button.style.padding = '4px 8px';
+    button.style.fontSize = '12px';
+    button.style.cursor = 'pointer';
+    button.style.opacity = '0';
+    button.style.transition = 'opacity 0.2s';
 
-  // Insert button before the title
-  titleElement.parentNode.insertBefore(button, titleElement);
+    if (getComputedStyle(playerContainer).position === 'static') {
+      playerContainer.style.position = 'relative';
+    }
+    playerContainer.appendChild(button);
 
-  button.addEventListener('click', (event) => {
-    event.preventDefault();
-    event.stopPropagation();
+    playerContainer.addEventListener('mouseenter', () => { button.style.opacity = '1'; });
+    playerContainer.addEventListener('mouseleave', () => { button.style.opacity = '0'; });
 
-    // Find the video link within the same ytd-video-renderer container
-    const linkElement = videoElement.querySelector('a#video-title');
-    if (linkElement && linkElement.href) {
-      const videoUrl = linkElement.href;
-      
-      // Copy URL to clipboard
-      navigator.clipboard.writeText(videoUrl).then(() => {
-        console.log('Video URL copied to clipboard:', videoUrl);
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      navigator.clipboard.writeText(window.location.href).then(() => {
         button.innerText = COPIED_TEXT;
         setTimeout(() => { button.innerText = BUTTON_TEXT; }, 1500);
-      }).catch(err => {
-        console.error('Failed to copy URL: ', err);
       });
-
-      // Send message to background script
       chrome.runtime.sendMessage({ action: "openTabOnly" });
+    });
+  }
 
-    } else {
-      console.error('Could not find the video link for search item.');
+  const SEARCH_BUTTON_ADDED_CLASS = 'gemini-search-button-added';
+
+  // Function to add a button to a search result item (title version)
+  function addChatButtonToSearchItem(videoElement) {
+    const titleElement = videoElement.querySelector(CONFIG.selectors.searchResultTitle);
+    if (!titleElement || titleElement.classList.contains(SEARCH_BUTTON_ADDED_CLASS)) {
+      return;
     }
+    titleElement.classList.add(SEARCH_BUTTON_ADDED_CLASS);
+
+    const button = document.createElement('button');
+    button.innerText = BUTTON_TEXT;
+    button.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    button.style.color = 'white';
+    button.style.border = '1px solid white';
+    button.style.borderRadius = '4px';
+    button.style.padding = '2px 6px';
+    button.style.fontSize = '12px';
+    button.style.cursor = 'pointer';
+    button.style.marginRight = '8px';
+    button.style.display = 'inline-block';
+    button.style.verticalAlign = 'middle';
+    titleElement.parentNode.insertBefore(button, titleElement);
+
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const linkElement = videoElement.querySelector(CONFIG.selectors.searchResultLink);
+      if (linkElement && linkElement.href) {
+        navigator.clipboard.writeText(linkElement.href).then(() => {
+          button.innerText = COPIED_TEXT;
+          setTimeout(() => { button.innerText = BUTTON_TEXT; }, 1500);
+        });
+        chrome.runtime.sendMessage({ action: "openTabOnly" });
+      } else {
+        console.error('Could not find the video link for search item.');
+      }
+    });
+  }
+
+  // Main scanning function
+  function scanForVideos() {
+    const searchVideos = document.querySelectorAll(CONFIG.selectors.searchResultItem);
+    searchVideos.forEach(addChatButtonToSearchItem);
+
+    const otherVideos = document.querySelectorAll(CONFIG.selectors.otherVideoItems);
+    otherVideos.forEach(addButtonToVideo);
+    
+    addButtonToPlayer();
+  }
+
+  // --- Observer and Initial Scan ---
+  const observer = new MutationObserver(() => {
+    clearTimeout(window.geminiTimeoutId);
+    window.geminiTimeoutId = setTimeout(scanForVideos, 300);
   });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+  scanForVideos();
 }
 
-// Function to scan for new videos and add buttons
-function scanForVideos() {
-  // Handle search result items separately
-  const searchVideos = document.querySelectorAll('ytd-video-renderer');
-  searchVideos.forEach(addChatButtonToSearchItem);
-
-  // Handle all other video types with the original function
-  const otherVideos = document.querySelectorAll('ytd-rich-item-renderer, yt-lockup-view-model, ytd-compact-video-renderer, ytd-grid-video-renderer');
-  otherVideos.forEach(addButtonToVideo);
-  
-  // 新增：处理视频播放器
-  addButtonToPlayer();
-}
-
-// Use a MutationObserver to handle dynamically loaded content (infinite scroll)
-const observer = new MutationObserver(() => {
-  // 使用防抖动处理，避免频繁调用
-  clearTimeout(window.geminiTimeoutId);
-  window.geminiTimeoutId = setTimeout(scanForVideos, 300);
+// --- Script Entry Point ---
+// Load the configuration from storage and then initialize the script.
+chrome.storage.sync.get({
+  selectors: DEFAULT_SELECTORS
+}, function(items) {
+  initialize({ selectors: items.selectors });
 });
-
-// Start observing the main content area of YouTube
-const targetNode = document.body;
-const config = { childList: true, subtree: true };
-observer.observe(targetNode, config);
-
-// Initial scan
-scanForVideos();
