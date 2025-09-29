@@ -7,45 +7,69 @@
     .container { display: flex; flex-direction: column; gap: 15px; }
     .input-group { display: flex; flex-direction: column; }
     label { font-weight: bold; margin-bottom: 5px; }
-    input[type="text"] { width: 100%; padding: 8px; box-sizing: border-box; }
-    button { padding: 10px 15px; cursor: pointer; }
-    #status { margin-top: 10px; color: green; font-weight: bold; }
+    input[type="text"], input[type="url"] { width: 100%; padding: 8px; box-sizing: border-box; }
+    button { padding: 10px 15px; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; }
+    #status { margin: 10px 0; color: green; font-weight: bold; min-height: 1.2em; }
+    .url-list { list-style: none; padding: 0; }
+    .url-list li { display: flex; align-items: center; gap: 10px; padding: 8px; border-bottom: 1px solid #eee; flex-wrap: wrap; }
+    .url-list li .name { font-weight: bold; flex-grow: 1; }
+    .url-list li .url { color: #555; font-size: 0.9em; width: 100%; padding-left: 25px; }
+    .delete-btn { background: #f44336; color: white; border: none; }
+    #add-gem-form { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+    #add-gem-form input { flex-grow: 1; }
+    details { border: 1px solid #eee; padding: 10px; border-radius: 4px; margin-top: 20px; }
+    summary { font-weight: bold; cursor: pointer; }
   </style>
 </head>
 <body>
-  <h1>Selector Configuration</h1>
-  <p>Here you can customize the CSS selectors used to find elements on YouTube's pages.</p>
-  
-  <div class="container">
-    <div class="input-group">
-      <label for="searchResultItem">Search Result Item Selector:</label>
-      <input id="searchResultItem" type="text">
-    </div>
-    <div class="input-group">
-      <label for="searchResultTitle">Search Result Title Selector:</label>
-      <input id="searchResultTitle" type="text">
-    </div>
-    <div class="input-group">
-      <label for="searchResultLink">Search Result Link Selector:</label>
-      <input id="searchResultLink" type="text">
-    </div>
-    <div class="input-group">
-      <label for="otherVideoItems">Other Video Items Selector:</label>
-      <input id="otherVideoItems" type="text">
-    </div>
-    <div class="input-group">
-      <label for="thumbnailTarget">Thumbnail Target Selector:</label>
-      <input id="thumbnailTarget" type="text">
-    </div>
-    <div class="input-group">
-      <label for="thumbnailLink">Thumbnail Link Selector:</label>
-      <input id="thumbnailLink" type="text">
-    </div>
-  </div>
+  <h1>Gemini URL Management</h1>
+  <p>Add, remove, and select your active Gemini Gem URL.</p>
 
-  <br>
-  <button id="save">Save</button>
   <div id="status"></div>
+
+  <h2>Add New Gem</h2>
+  <form id="add-gem-form">
+    <input id="gem-name" type="text" placeholder="Name (e.g., Work Gem)" required>
+    <input id="gem-url" type="url" placeholder="https://gemini.google.com/..." required>
+    <button type="submit">Add</button>
+  </form>
+
+  <h2>Saved Gems</h2>
+  <ul id="gem-url-list" class="url-list">
+    <!-- URLs will be dynamically inserted here by options.js -->
+  </ul>
+  
+  <details>
+    <summary>Advanced: CSS Selectors</summary>
+    <div class="container">
+        <div class="input-group">
+          <label for="searchResultItem">Search Result Item Selector:</label>
+          <input id="searchResultItem" type="text">
+        </div>
+        <div class="input-group">
+          <label for="searchResultTitle">Search Result Title Selector:</label>
+          <input id="searchResultTitle" type="text">
+        </div>
+        <div class="input-group">
+          <label for="searchResultLink">Search Result Link Selector:</label>
+          <input id="searchResultLink" type="text">
+        </div>
+        <div class="input-group">
+          <label for="otherVideoItems">Other Video Items Selector:</label>
+          <input id="otherVideoItems" type="text">
+        </div>
+        <div class="input-group">
+          <label for="thumbnailTarget">Thumbnail Target Selector:</label>
+          <input id="thumbnailTarget" type="text">
+        </div>
+        <div class="input-group">
+          <label for="thumbnailLink">Thumbnail Link Selector:</label>
+          <input id="thumbnailLink" type="text">
+        </div>
+        <br>
+        <button id="save-selectors">Save Selectors</button>
+    </div>
+  </details>
 
   <script src="options.js"></script>
 </body>
