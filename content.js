@@ -74,36 +74,31 @@ function initialize(CONFIG) {
     });
   }
 
-  // Function to add a button to the player
+  // Function to add a button in front of the video title
   function addButtonToPlayer() {
     if (!window.location.pathname.startsWith('/watch')) return;
-    const playerContainer = document.getElementById('player');
-    if (!playerContainer || playerContainer.classList.contains(ADDED_PLAYER_BUTTON_CLASS)) return;
-    playerContainer.classList.add(ADDED_PLAYER_BUTTON_CLASS);
+
+    const titleElement = document.querySelector('#title h1.ytd-watch-metadata');
+    if (!titleElement || titleElement.classList.contains(ADDED_PLAYER_BUTTON_CLASS)) {
+      return;
+    }
+    titleElement.classList.add(ADDED_PLAYER_BUTTON_CLASS);
 
     const button = document.createElement('button');
     button.innerText = BUTTON_TEXT;
-    button.style.position = 'absolute';
-    button.style.top = '12px';
-    button.style.right = '12px';
-    button.style.zIndex = '9999';
     button.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
     button.style.color = 'white';
     button.style.border = '1px solid white';
     button.style.borderRadius = '4px';
-    button.style.padding = '4px 8px';
+    button.style.padding = '2px 6px';
     button.style.fontSize = '12px';
     button.style.cursor = 'pointer';
-    button.style.opacity = '0';
-    button.style.transition = 'opacity 0.2s';
+    button.style.marginRight = '8px';
+    button.style.display = 'inline-block';
+    button.style.verticalAlign = 'middle';
 
-    if (getComputedStyle(playerContainer).position === 'static') {
-      playerContainer.style.position = 'relative';
-    }
-    playerContainer.appendChild(button);
-
-    playerContainer.addEventListener('mouseenter', () => { button.style.opacity = '1'; });
-    playerContainer.addEventListener('mouseleave', () => { button.style.opacity = '0'; });
+    // Insert the button at the beginning of the h1 tag
+    titleElement.insertBefore(button, titleElement.firstChild);
 
     button.addEventListener('click', (event) => {
       event.preventDefault();
